@@ -2,7 +2,7 @@ import '/routes/route_name.dart';
 import 'package:get/get.dart';
 
 import '../screen/auth/sign_in.dart';
-import '../screen/dashboard/dashboard/dashboard_screen.dart';
+import '../screen/dashboard/dashboard_screen.dart';
 import '../screen/splash/splash_screen.dart';
 
 class RoutePages {

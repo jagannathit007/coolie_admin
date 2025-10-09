@@ -76,13 +76,17 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: AppConfig.appName,
-      initialRoute: RouteName.splash,
-      getPages: RoutePages.pages,
-      defaultTransition: Transition.rightToLeftWithFade,
-      debugShowCheckedModeBanner: false,
-      theme: defaultTheme,
+    return SafeArea(
+      top: false,
+      bottom: true,
+      child: GetMaterialApp(
+        title: AppConfig.appName,
+        initialRoute: RouteName.splash,
+        getPages: RoutePages.pages,
+        defaultTransition: Transition.rightToLeftWithFade,
+        debugShowCheckedModeBanner: false,
+        theme: defaultTheme,
+      ),
     );
   }
 }

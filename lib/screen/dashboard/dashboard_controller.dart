@@ -3,8 +3,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
-import '../../../model/pending_coolie_list_model.dart';
-import '../../../repositories/authentication_repo.dart';
+import '../../model/pending_coolie_list_model.dart';
+import '../../repositories/authentication_repo.dart';
 
 class DashboardController extends GetxController{
   final AuthenticationRepo _authRepo = AuthenticationRepo();

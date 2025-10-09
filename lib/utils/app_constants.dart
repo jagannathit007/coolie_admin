@@ -1,5 +1,3 @@
-
-
 import 'dart:io';
 import 'dart:ui';
 
@@ -16,11 +14,11 @@ class Constants with _ColorMixin, _NumericalMixin, _ConstMixin, _LightColorMixin
 mixin _ColorMixin {
   final black = const Color(0xff1E1F20);
   final white = const Color(0xffffffff);
-  final appBarColor = const Color(0xFF0D47A1);
+  final appBarColor = const Color(0xFF00695C);
   // final red = const Color(0xffF13637);
   final blueViolet = const Color(0xff8434F4);
   final magnolia = const Color(0xffF3EBFE);
-  final americanYellow = const Color(0xffEFB203);
+  final americanYellow = const Color(0xffF28C38);
   final cosmicLatte = const Color(0xffFEF8E6);
   final apple = const Color(0xff4BB543);
   final honeyDue = const Color(0xffEDF8ED);
@@ -38,8 +36,8 @@ mixin _ColorMixin {
   final transparent = Colors.transparent;
   // final primary15 = const Color(0x26183883);
   final redLight = const Color(0xffFEEBEB);
-  final blue50 = const Color(0xffF1F5FF);
-  final red10 = const Color(0x1AF13637);
+  final blue50 = const Color(0xffE8F0FE);
+  final red10 = const Color(0x1AD32F2F);
   final apple10 = const Color(0x1A4BB543);
   // final shadow = Color(0x1A000000);
 
@@ -64,34 +62,36 @@ mixin _ColorMixin {
   final greyShade800 = const Color(0xFF424242);
   final greyShade900 = const Color(0xFF212121);
 
-  final blue400 = const Color(0xff78A0FF);
-  final blue500 = const Color(0xff5D87E9);
-  final blue600 = const Color(0xff4169C7);
-  final blue800 = const Color(0xff183883);
+  final blue400 = const Color(0xff4B7BFF);
+  final blue500 = const Color(0xff3267D6);
+  final blue600 = const Color(0xff2657B5);
+  final blue800 = const Color(0xff1A4687);
 
   final jordyBlue = const Color(0xff96B6FF);
 
   final successToast = const Color.fromRGBO(72, 215, 97, 1);
-  final errorToast = const Color.fromRGBO(255, 52, 91, 1);
+  final errorToast = const Color.fromRGBO(211, 47, 47, 1);
   final infoToast = const Color.fromRGBO(45, 135, 232, 1);
-  final warningToast = const Color.fromRGBO(255, 191, 37, 1);
+  final warningToast = const Color.fromRGBO(242, 140, 56, 1);
   final toast = const Color(0xff474747);
 
   //! NEW THEME
-  final primary = Color(0xFF0D47A1);
-  final secondary = const Color(0xFF8FB2EF);
-  final secondaryCard = const Color(0xFFA14044);
-  final error = const Color(0xffa10d0d);
-  final instagramRed = Color(0xFFFD1D1D);
+  // Modern professional palette
+  // Primary: Indigo/Blue, Secondary: Teal
+  final primary = const Color(0xFFC60000); // Indigo/Blue 600
+  final secondary = const Color(0xFFF5C242); // Teal 500
+  final secondaryCard = const Color(0xFFD1FAE5); // Soft teal tint
+  final error = const Color(0xffD32F2F);
+  final instagramRed = Color(0xFFD32F2F);
   //! background colour
-  final scaffoldBackgroundColor = Color(0xFFF3F3F9);
+  final scaffoldBackgroundColor = Color(0xFFF6F8FB);
 }
 
 mixin _NumericalMixin {
   final SizedBox square = const SizedBox(width: 15, height: 15);
   final EdgeInsets padding = const EdgeInsets.symmetric(horizontal: 15, vertical: 13);
   final EdgeInsets popupPadding = EdgeInsets.symmetric(horizontal: 20, vertical: 10);
-// final boxShadow = <BoxShadow>[BoxShadow(color: Color(0xff000000), offset: Offset(0, 1), blurRadius: 2)];
+  // final boxShadow = <BoxShadow>[BoxShadow(color: Color(0xff000000), offset: Offset(0, 1), blurRadius: 2)];
 }
 
 mixin _ConstMixin {
@@ -108,34 +108,34 @@ mixin _ConstMixin {
 
 mixin _LightColorMixin {
   // Primary Colors
-  final lightPrimary = const Color.fromARGB(255, 255, 198, 198);
+  final lightPrimary = const Color(0xFF2563EB);
   final lightOnPrimary = const Color(0xff000000); // Black for contrast
-  final lightPrimaryContainer = const Color.fromARGB(255, 255, 160, 160); // Lighter shade of primary
+  final lightPrimaryContainer = const Color(0xFFE0E7FF); // Lighter indigo
   final lightOnPrimaryContainer = const Color(0xff000000); // Black for contrast
 
   // Secondary Colors
-  final lightSecondary = const Color.fromARGB(255, 255, 226, 226);
+  final lightSecondary = const Color(0xFF0EA5A4);
   final lightOnSecondary = const Color(0xff000000); // Black for contrast
-  final lightSecondaryContainer = const Color.fromARGB(255, 245, 176, 176); // Lighter shade of secondary
+  final lightSecondaryContainer = const Color(0xFFD1FAE5); // Lighter teal
   final lightOnSecondaryContainer = const Color(0xff000000); // Black for contrast
 
   // Tertiary Colors
   //final tertiary = Color(0xFF66990C);
-  final tertiary = Color(0xFF530B0E);
-  final lightTertiary = const Color(0xffFFDDAE);
+  final tertiary = Color(0xFF2563EB);
+  final lightTertiary = const Color(0xFFE0E7FF);
   final lightOnTertiary = const Color(0xff000000); // Black for contrast
-  final lightTertiaryContainer = const Color(0xffFFCC80); // Lighter shade of tertiary
+  final lightTertiaryContainer = const Color(0xFFEFF6FF); // Lighter shade of tertiary
   final lightOnTertiaryContainer = const Color(0xff000000); // Black for contrast
 
   // Surface Colors
-  final lightSurface = const Color(0xffFBFBFB);
+  final lightSurface = const Color(0xFFF6F8FB);
   final lightOnSurface = const Color(0xff000000); // Black for contrast
-  final lightSurfaceVariant = const Color(0xffE0E0E0); // Light gray for surface variants
-  final lightSurfaceTint = const Color.fromARGB(255, 255, 198, 198); // Same as primary
+  final lightSurfaceVariant = const Color(0xFFE0E0E0); // Light gray for surface variants
+  final lightSurfaceTint = const Color(0xFF2563EB); // Same as primary
 
   // Error Colors (default Material error colors)
-  final lightError = const Color(0xffB00020);
-  final lightOnError = const Color(0xffffffff); // White for contrast
+  final lightError = const Color(0xffD32F2F);
+  final lightOnError = const Color(0xff000000); // Black for contrast
   final lightErrorContainer = const Color(0xffF9DEDC); // Light red for error container
   final lightOnErrorContainer = const Color(0xff410002); // Dark red for error container text
 
@@ -147,5 +147,5 @@ mixin _LightColorMixin {
   final lightShadow = const Color(0xff000000); // Black for shadows
   final lightScrim = const Color(0xff000000); // Black for scrims
   final lightInverseSurface = const Color(0xff121212); // Dark for inverse surfaces
-  final lightInversePrimary = const Color.fromARGB(255, 0, 0, 0); // Lighter shade of primary for inverse
+  final lightInversePrimary = const Color(0xFF93C5FD); // Lighter shade of primary for inverse
 }
