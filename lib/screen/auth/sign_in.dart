@@ -124,7 +124,7 @@ class SignIn extends StatelessWidget {
                                     onTap: controller.isLoading.value
                                         ? null
                                         : () async {
-                                            await controller.signIN();
+                                            await controller.signIn();
                                           },
                                     borderRadius: BorderRadius.circular(16),
                                     child: Container(

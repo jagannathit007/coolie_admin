@@ -1,10 +1,13 @@
+import 'dart:developer';
 
 import 'package:get/get.dart';
 import 'package:flutter/animation.dart';
 
 import '../../routes/route_name.dart';
+import '../../services/app_storage.dart';
 
-class SplashController extends GetxController with GetSingleTickerProviderStateMixin {
+class SplashController extends GetxController
+    with GetSingleTickerProviderStateMixin {
   late AnimationController animationController;
   late Animation<double> fadeAnimation;
   late Animation<double> scaleAnimation;
@@ -12,7 +15,10 @@ class SplashController extends GetxController with GetSingleTickerProviderStateM
   @override
   void onInit() {
     super.onInit();
-    animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1800));
+    animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    );
 
     fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
@@ -21,29 +27,29 @@ class SplashController extends GetxController with GetSingleTickerProviderStateM
       ),
     );
 
-    scaleAnimation = Tween<double>(begin: 0.5, end: 1).animate(CurvedAnimation(parent: animationController, curve: Curves.elasticOut));
+    scaleAnimation = Tween<double>(begin: 0.5, end: 1).animate(
+      CurvedAnimation(parent: animationController, curve: Curves.elasticOut),
+    );
 
     animationController.forward();
+_navigateHome();
+  
+  }
 
-    // Navigate after animation completes
-    Future.delayed(const Duration(seconds: 3), () {
-      // String? loginAs = AppStorage.read<String?>('fcmToken');
-      // Get.toNamed(RouteNames.signIn);
-      // if (loginAs != null) {
-      //   Get.offAllNamed(
-      //     loginAs == 'admin'
-      //         ? RouteNames.adminDashboard
-      //         : loginAs == 'employee'
-      //         ? RouteNames.dashboard
-      //         : RouteNames.dashboard,
-      //   );
-      // } else {
-      //   Get.toNamed(RouteNames.signIn);
-      // }
 
-       Get.offAllNamed(RouteName.signIn);
-
-    });
+  void _navigateHome() async {
+    log("Navigate Home");
+    await Future.delayed(const Duration(seconds: 3));
+    log("Take token from storage");
+    String token = AppStorage.read("token");
+    log("Token: $token");
+    if (token.isNotEmpty) {
+      log("Token found, navigate to Home");
+      Get.offAllNamed(RouteName.home);
+    } else {
+      log("Token found, navigate to SignIn");
+      Get.offAllNamed(RouteName.signIn);
+    }
   }
 
   @override

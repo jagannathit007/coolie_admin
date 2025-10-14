@@ -8,8 +8,4 @@ class RouteName {
   static const String transactionHistory = '/TransactionHistory';
   static const String otpVerification = '/OtpVerification';
 
-
-  //Traveller
-
-  static const String travelHomeScreen = '/TravelHomeScreen';
 }
