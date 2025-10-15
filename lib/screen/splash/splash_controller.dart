@@ -38,19 +38,15 @@ _navigateHome();
 
 
   void _navigateHome() async {
-    log("Navigate Home");
     await Future.delayed(const Duration(seconds: 3));
-    log("Take token from storage");
-    String token = AppStorage.read("token");
-    log("Token: $token");
+    String token = AppStorage.read("token") ?? "";
     if (token.isNotEmpty) {
-      log("Token found, navigate to Home");
       Get.offAllNamed(RouteName.home);
     } else {
-      log("Token found, navigate to SignIn");
       Get.offAllNamed(RouteName.signIn);
     }
   }
+
 
   @override
   void onClose() {
