@@ -4,18 +4,14 @@ import '../api constants/api_manager.dart';
 import '../api constants/network_constants.dart';
 import '../model/admin_model.dart';
 import '../model/add_coolie_response_model.dart';
+import '../model/station_model.dart';
 import '../services/app_toasting.dart';
 import 'dart:convert';
 
 class AuthenticationRepo {
   Future<AuthenticationRepo> init() async => this;
 
-  Future<AdminSignInResponse?> signIn({
-    required String email,
-    required String password,
-    required String deviceId,
-    required String fcm,
-  }) async {
+  Future<AdminSignInResponse?> signIn({required String email, required String password, required String deviceId, required String fcm}) async {
     try {
       final result = await apiManager.post(
         NetworkConstants.signIn,
@@ -26,9 +22,9 @@ class AuthenticationRepo {
           // "deviceId": deviceId,
         },
       );
-  
+
       debugPrint("SignIn Raw Response: ${result.data}");
-  
+
       if (result.data is Map<String, dynamic>) {
         return AdminSignInResponse.fromJson(result.data);
       } else {
@@ -43,7 +39,7 @@ class AuthenticationRepo {
 
   Future<dynamic> pendingApproval() async {
     try {
-      final response = await apiManager.get(NetworkConstants.pendingApproval,);
+      final response = await apiManager.get(NetworkConstants.pendingApproval);
 
       if (response.status != 200) {
         AppToasting.showWarning(response.data?.message ?? 'Failed to fetch profile');
@@ -57,17 +53,44 @@ class AuthenticationRepo {
     }
   }
 
+  Future<StationListResponse?> getAllStation() async {
+    try {
+      final response = await apiManager.get(NetworkConstants.getAllStation);
+
+      if (response.status != 200) {
+        AppToasting.showWarning(response.message);
+        return null;
+      }
+
+      debugPrint("Station Data ${response.data}");
+
+      if (response.data != null) {
+        return StationListResponse.fromJson(response.data);
+      } else {
+        AppToasting.showWarning('Invalid station data format');
+        return null;
+      }
+    } catch (err) {
+      AppToasting.showError('Error fetching stations: ${err.toString()}');
+      return null;
+    }
+  }
+
   Future<AddCoolieResponse?> addCoolie(dynamic data) async {
     try {
       var response = await apiManager.post(NetworkConstants.addCollie, data: data);
-      
+
       debugPrint("Add Coolie Raw Response: ${response.data}");
-      
+
       if (response.status == 200) {
-        final Map<String, dynamic> responseData = 
-            json.decode(response.data) as Map<String, dynamic>;
-        
-          return AddCoolieResponse.fromJson(responseData);
+        if (response.data == null) {
+          AppToasting.showWarning(response.message);
+          return null;
+        }
+
+        final Map<String, dynamic> responseData = json.decode(response.data) as Map<String, dynamic>;
+
+        return AddCoolieResponse.fromJson(responseData);
       } else {
         AppToasting.showWarning('Failed to add coolie');
         return null;
@@ -80,7 +103,7 @@ class AuthenticationRepo {
 
   Future<dynamic> approveCoolie() async {
     try {
-      final response = await apiManager.get(NetworkConstants.addCollie,);
+      final response = await apiManager.get(NetworkConstants.addCollie);
 
       if (response.status != 200) {
         AppToasting.showWarning(response.data?.message ?? 'Failed to fetch profile');

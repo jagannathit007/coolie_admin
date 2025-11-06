@@ -1,99 +1,112 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 
 class AppToasting {
-  // Success toast
-  static void showSuccess(
-      String message, {
-        String title = 'Success',
-        Duration duration = const Duration(seconds: 3),
-      }) {
-    _showToast(
-      message,
-      title: title,
-      backgroundColor: Colors.green,
-      icon: Icons.check_circle,
-      duration: duration,
-    );
+  AppToasting._();
+
+  // Success Toast
+  static void showSuccess(String message) {
+    _showMaterialSnackBar(message: message, backgroundColor: Color.fromRGBO(72, 215, 97, 1), icon: Icons.check_circle);
   }
 
-  // Error toast
-  static void showError(
-      String message, {
-        String title = 'Error',
-        Duration duration = const Duration(seconds: 3),
-      }) {
-    _showToast(
-      message,
-      title: title,
-      backgroundColor: Colors.red,
-      icon: Icons.error,
-      duration: duration,
-    );
+  // Error Toast
+  static void showError(String message) {
+    _showMaterialSnackBar(message: message, backgroundColor: Color.fromRGBO(255, 52, 91, 1), icon: Icons.error);
   }
 
-  // Warning toast
-  static void showWarning(
-      String message, {
-        String title = 'Warning',
-        Duration duration = const Duration(seconds: 3),
-      }) {
-    _showToast(
-      message,
-      title: title,
-      backgroundColor: Colors.orange,
-      icon: Icons.warning,
-      duration: duration,
-    );
+  // Warning Toast
+  static void showWarning(String message) {
+    _showMaterialSnackBar(message: message, backgroundColor: Color.fromARGB(255, 130, 92, 4), icon: Icons.warning);
   }
 
-  // Info toast
-  static void showInfo(
-      String message, {
-        String title = 'Info',
-        Duration duration = const Duration(seconds: 3),
-      }) {
-    _showToast(
-      message,
-      title: title,
-      backgroundColor: Colors.blue,
-      icon: Icons.info,
-      duration: duration,
-    );
+  // GreyColor Toast
+  static void showGrey(String message) {
+    _showMaterialSnackBar(message: message, backgroundColor: Color.fromRGBO(45, 135, 232, 1), icon: Icons.info);
   }
 
-  // Main toast method
-  static void _showToast(
-      String message, {
-        required String title,
-        required Color backgroundColor,
-        required IconData icon,
-        Duration duration = const Duration(seconds: 3),
-      }) {
-    closeAllToasts();
-    Get.snackbar(
-      title,
-      message,
-      duration: duration,
-      backgroundColor: backgroundColor.withOpacity(0.9),
-      colorText: Colors.white,
-      icon: Icon(icon, color: Colors.white),
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(10),
-      borderRadius: 8,
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-      forwardAnimationCurve: Curves.easeOutBack,
-      reverseAnimationCurve: Curves.easeInOut,
-      animationDuration: const Duration(milliseconds: 500),
-      barBlur: 5,
-    );
+  static void _showMaterialSnackBar({required String message, required Color backgroundColor, IconData? icon}) {
+    // Close any currently open keyboard
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    // Use post-frame callback to ensure we're not in build phase
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showSnackBarAfterBuild(message: message, backgroundColor: backgroundColor, icon: icon);
+    });
   }
 
-  // Close all toasts
-  static void closeAllToasts() {
-    if (Get.isSnackbarOpen) {
-      Get.closeAllSnackbars();
+  static void _showSnackBarAfterBuild({required String message, required Color backgroundColor, IconData? icon}) {
+    if (Get.context != null && Get.context!.mounted) {
+      ScaffoldMessenger.of(Get.context!).clearSnackBars();
+      ScaffoldMessenger.of(Get.context!).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              if (icon != null) Icon(icon, color: Colors.white, size: 24),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: backgroundColor,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 10),
+          dismissDirection: DismissDirection.horizontal,
+        ),
+      );
+    } else {
+      _fallbackToFlutterToast(message, backgroundColor);
     }
   }
+
+  static void _fallbackToFlutterToast(String message, Color backgroundColor) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: backgroundColor,
+      textColor: Colors.white,
+      fontSize: 14.0,
+    );
+  }
+}
+
+errorToast(String message) {
+  Fluttertoast.showToast(
+    msg: message,
+    toastLength: Toast.LENGTH_LONG,
+    gravity: ToastGravity.BOTTOM,
+    timeInSecForIosWeb: 1,
+    backgroundColor: Colors.red,
+    textColor: Colors.white,
+    fontSize: 12.0,
+  );
+}
+
+successToast(String message) {
+  Fluttertoast.showToast(
+    msg: message,
+    toastLength: Toast.LENGTH_SHORT,
+    gravity: ToastGravity.BOTTOM,
+    backgroundColor: Colors.green,
+    textColor: Colors.white,
+    fontSize: 12.0,
+  );
+}
+
+warningToast(String message) {
+  Fluttertoast.showToast(
+    msg: message,
+    toastLength: Toast.LENGTH_SHORT,
+    gravity: ToastGravity.BOTTOM,
+    backgroundColor: Colors.amber,
+    textColor: Colors.black,
+    fontSize: 12.0,
+  );
 }
