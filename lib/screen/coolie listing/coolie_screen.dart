@@ -1,8 +1,11 @@
 import 'package:coolie_admin/api%20constants/network_constants.dart';
+import 'package:coolie_admin/routes/route_name.dart';
 import 'package:coolie_admin/screen/coolie listing/coolie_controller.dart';
 import 'package:coolie_admin/screen/coolie listing/coolie_service.dart';
 import 'package:coolie_admin/screen/coolie listing/editCoolieBottomSheet.dart';
 import 'package:coolie_admin/screen/dashboard/addCoolieBottomSheet.dart';
+import 'package:coolie_admin/services/app_storage.dart';
+import 'package:coolie_admin/services/app_toasting.dart';
 import 'package:coolie_admin/utils/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -118,9 +121,14 @@ class _CoolieScreenState extends State<CoolieScreen> {
       iconTheme: IconThemeData(color: Constants.instance.white),
       backgroundColor: Constants.instance.primary,
       elevation: 0,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      automaticallyImplyLeading: false,
+      title: Row(
         children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+          const SizedBox(width: 8),
           Text(
             "Coolie Management",
             style: GoogleFonts.poppins(
@@ -131,7 +139,109 @@ class _CoolieScreenState extends State<CoolieScreen> {
           ),
         ],
       ),
+      actions: [
+        // Container(
+        //   margin: const EdgeInsets.only(right: 8),
+        //   decoration: BoxDecoration(
+        //     color: Colors.white.withOpacity(0.2),
+        //     borderRadius: BorderRadius.circular(10),
+        //   ),
+        //   child: IconButton(
+        //     onPressed: () {
+        //       _showLogoutDialog();
+        //     },
+        //     icon: const Icon(Icons.logout_rounded, color: Colors.white),
+        //     tooltip: 'Logout',
+        //   ),
+        // ),
+      ],
     );
+  }
+
+  void _showLogoutDialog() {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.logout_rounded, color: Colors.red, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Logout',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            color: Colors.grey[700],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.red, Colors.red[700]!],
+              ),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: TextButton(
+              onPressed: () async {
+                Get.back();
+                await _logout();
+              },
+              child: Text(
+                'Logout',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _logout() async {
+    try {
+      await AppStorage.clearAll();
+      AppToasting.showSuccess('Logged out successfully!');
+      Get.offAllNamed(RouteName.signIn);
+    } catch (e) {
+      debugPrint("Logout error: ${e.toString()}");
+      AppToasting.showError('Logout failed: ${e.toString()}');
+    }
   }
 
   Widget _buildSearchSection(CoolieController controller) {
@@ -237,147 +347,197 @@ class _CoolieScreenState extends State<CoolieScreen> {
             borderRadius: BorderRadius.circular(20),
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Profile Image
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    child: ClipOval(
-                      child: coolie.image.url.isNotEmpty
-                          ? Image.network(
-                              "${NetworkConstants.imageURL}${coolie.image.url}",
-                              width: 56,
-                              height: 56,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  width: 56,
-                                  height: 56,
-                                  color: Colors.grey[200],
-                                  child: Icon(
-                                    Icons.person_rounded,
-                                    size: 32,
-                                    color: Colors.grey[400],
-                                  ),
-                                );
-                              },
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
+                  Row(
+                    children: [
+                      // Profile Image
+                      Container(
+                        padding: const EdgeInsets.all(4),
+
+                        child: ClipOval(
+                          child: coolie.image.url.isNotEmpty
+                              ? Image.network(
+                                  "${NetworkConstants.imageURL}${coolie.image.url}",
+                                  width: 64,
+                                  height: 64,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
                                     return Container(
-                                      width: 56,
-                                      height: 56,
+                                      width: 64,
+                                      height: 64,
                                       color: Colors.grey[200],
-                                      child: Center(
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          value:
-                                              loadingProgress
-                                                      .expectedTotalBytes !=
-                                                  null
-                                              ? loadingProgress
-                                                        .cumulativeBytesLoaded /
-                                                    loadingProgress
-                                                        .expectedTotalBytes!
-                                              : null,
-                                        ),
+                                      child: Icon(
+                                        Icons.person_rounded,
+                                        size: 36,
+                                        color: Colors.grey[400],
                                       ),
                                     );
                                   },
-                            )
-                          : Container(
-                              width: 56,
-                              height: 56,
-                              color: Colors.grey[200],
-                              child: Icon(
-                                Icons.person_rounded,
-                                size: 32,
-                                color: Colors.grey[400],
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Coolie Info
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      coolie.name,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey[800],
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                        if (loadingProgress == null)
+                                          return child;
+                                        return Container(
+                                          width: 64,
+                                          height: 64,
+                                          color: Colors.grey[200],
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              value:
+                                                  loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                )
+                              : Container(
+                                  width: 64,
+                                  height: 64,
+                                  color: Colors.grey[200],
+                                  child: Icon(
+                                    Icons.person_rounded,
+                                    size: 36,
+                                    color: Colors.grey[400],
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.badge_outlined,
-                                    size: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    "Buckle: ${coolie.buckleNumber}",
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.star_rounded,
-                                    size: 14,
-                                    color: Colors.amber[600],
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    "${coolie.rating} (${coolie.totalRatings} reviews)",
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      color: Colors.grey[700],
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                                ),
                         ),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
+                      ),
+                      const SizedBox(width: 16),
+                      // Coolie Name and Status
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildStatusBadge(coolie),
+                            Text(
+                              coolie.name,
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[800],
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                             const SizedBox(height: 8),
-                            _buildEditButton(coolie, controller),
+                            _buildStatusBadge(coolie),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                      // Edit Button
+                      _buildEditButton(coolie, controller),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Details Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildInfoChip(
+                          icon: Icons.badge_outlined,
+                          label: "Buckle",
+                          value: coolie.buckleNumber,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildInfoChip(
+                          icon: Icons.location_on_outlined,
+                          label: "Station",
+                          value: coolie.stationId.name,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Rating and Bookings
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildInfoChip(
+                          icon: Icons.star_rounded,
+                          label: "Rating",
+                          value: "${coolie.rating} (${coolie.totalRatings})",
+                          iconColor: Colors.amber[600],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildInfoChip(
+                          icon: Icons.check_circle_outline,
+                          label: "Bookings",
+                          value: coolie.completedBookings,
+                          iconColor: Colors.green[600],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoChip({
+    required IconData icon,
+    required String label,
+    required String value,
+    Color? iconColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey[200]!, width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: iconColor ?? Colors.grey[600]),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey[800],
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -390,35 +550,21 @@ class _CoolieScreenState extends State<CoolieScreen> {
           _searchFocusNode.unfocus();
           _showEditCoolieBottomSheet(coolie);
         },
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: Constants.instance.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: Constants.instance.primary.withOpacity(0.3),
-              width: 1,
+              width: 1.5,
             ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.edit_rounded,
-                size: 14,
-                color: Constants.instance.primary,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                "Edit",
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: Constants.instance.primary,
-                ),
-              ),
-            ],
+          child: Icon(
+            Icons.edit_rounded,
+            size: 18,
+            color: Constants.instance.primary,
           ),
         ),
       ),
@@ -443,45 +589,49 @@ class _CoolieScreenState extends State<CoolieScreen> {
     IconData icon;
 
     if (!coolie.isApproved) {
-      badgeColor = Colors.orange.withOpacity(0.1);
+      badgeColor = Colors.orange.withOpacity(0.15);
       textColor = Colors.orange[800]!;
-      status = "Pending";
+      status = "Pending Approval";
       icon = Icons.pending_actions_rounded;
     } else if (coolie.isActive && coolie.isLoggedIn) {
-      badgeColor = Colors.green.withOpacity(0.1);
+      badgeColor = Colors.green.withOpacity(0.15);
       textColor = Colors.green[800]!;
-      status = "Active";
+      status = "Active & Online";
       icon = Icons.check_circle_rounded;
     } else if (coolie.isActive) {
-      badgeColor = Colors.blue.withOpacity(0.1);
+      badgeColor = Colors.blue.withOpacity(0.15);
       textColor = Colors.blue[800]!;
-      status = "Inactive";
+      status = "Active (Offline)";
       icon = Icons.pause_circle_outline_rounded;
     } else {
-      badgeColor = Colors.grey.withOpacity(0.1);
+      badgeColor = Colors.grey.withOpacity(0.15);
       textColor = Colors.grey[800]!;
       status = "Inactive";
       icon = Icons.block_rounded;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: badgeColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: textColor.withOpacity(0.3), width: 1),
+        border: Border.all(color: textColor.withOpacity(0.4), width: 1.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: textColor),
-          const SizedBox(width: 4),
-          Text(
-            status,
-            style: GoogleFonts.poppins(
-              color: textColor,
-              fontWeight: FontWeight.w600,
-              fontSize: 11,
+          Icon(icon, size: 13, color: textColor),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              status,
+              style: GoogleFonts.poppins(
+                color: textColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 10,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -599,7 +749,7 @@ class _CoolieScreenState extends State<CoolieScreen> {
                       children: [
                         // Profile Header
                         Container(
-                          padding: const EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
@@ -611,89 +761,149 @@ class _CoolieScreenState extends State<CoolieScreen> {
                             ),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Row(
+                          child: Column(
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.2),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(4),
+
+                                    child: ClipOval(
+                                      child: coolie.image.url.isNotEmpty
+                                          ? Image.network(
+                                              "${NetworkConstants.imageURL}${coolie.image.url}",
+                                              width: 80,
+                                              height: 80,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                    return Container(
+                                                      width: 80,
+                                                      height: 80,
+                                                      color: Colors.grey[200],
+                                                      child: Icon(
+                                                        Icons.person_rounded,
+                                                        size: 48,
+                                                        color: Colors.grey[400],
+                                                      ),
+                                                    );
+                                                  },
+                                            )
+                                          : Container(
+                                              width: 80,
+                                              height: 80,
+                                              color: Colors.grey[200],
+                                              child: Icon(
+                                                Icons.person_rounded,
+                                                size: 48,
+                                                color: Colors.grey[400],
+                                              ),
+                                            ),
                                     ),
-                                  ],
-                                ),
-                                child: ClipOval(
-                                  child: coolie.image.url.isNotEmpty
-                                      ? Image.network(
-                                          "${NetworkConstants.imageURL}${coolie.image.url}",
-                                          width: 64,
-                                          height: 64,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                                return Container(
-                                                  width: 64,
-                                                  height: 64,
-                                                  color: Colors.grey[200],
-                                                  child: Icon(
-                                                    Icons.person_rounded,
-                                                    size: 40,
-                                                    color: Colors.grey[400],
-                                                  ),
-                                                );
-                                              },
-                                        )
-                                      : Container(
-                                          width: 64,
-                                          height: 64,
-                                          color: Colors.grey[200],
-                                          child: Icon(
-                                            Icons.person_rounded,
-                                            size: 40,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      coolie.name,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey[800],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Icon(
-                                          Icons.phone,
-                                          size: 14,
-                                          color: Colors.grey[600],
-                                        ),
-                                        const SizedBox(width: 4),
                                         Text(
-                                          coolie.mobileNo,
+                                          coolie.name,
                                           style: GoogleFonts.poppins(
-                                            fontSize: 14,
-                                            color: Colors.grey[600],
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.grey[800],
+                                            height: 1.2,
                                           ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.phone,
+                                              size: 16,
+                                              color: Colors.grey[600],
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              coolie.mobileNo,
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 15,
+                                                color: Colors.grey[700],
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                              _buildStatusBadge(coolie),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  _buildStatusBadge(coolie),
+                                  Spacer(),
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        _showEditCoolieBottomSheet(coolie);
+                                      },
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 10,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Constants.instance.primary,
+                                              Constants.instance.primary
+                                                  .withOpacity(0.8),
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Constants.instance.primary
+                                                  .withOpacity(0.3),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 4),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(
+                                              Icons.edit_rounded,
+                                              color: Colors.white,
+                                              size: 12,
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              "Edit",
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),

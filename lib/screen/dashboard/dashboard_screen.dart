@@ -1,5 +1,7 @@
 import 'package:coolie_admin/screen/dashboard/addCoolieBottomSheet.dart';
 
+import '../../services/app_storage.dart';
+import '../../services/app_toasting.dart';
 import 'dashboard_controller.dart';
 import '/utils/app_constants.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +26,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: _buildModernAppBar(),
-          drawer: _buildModernDrawer(controller),
+          // drawer: _buildModernDrawer(controller),
           body: Column(
             children: [
               _buildStatsSection(controller),
@@ -39,6 +41,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
 
   PreferredSizeWidget _buildModernAppBar() {
     return AppBar(
+      automaticallyImplyLeading: false,
       iconTheme: IconThemeData(
         color: Constants.instance.white, // Set your desired color here
       ),
@@ -46,12 +49,12 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
       elevation: 0,
       title: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
-            child: const Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 24),
-          ),
-          const SizedBox(width: 12),
+          // Container(
+          //   padding: const EdgeInsets.all(8),
+          //   decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
+          //   child: const Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 24),
+          // ),
+          // const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -62,21 +65,124 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
               Text("Dashboard", style: GoogleFonts.poppins(fontSize: 12, color: Colors.white70)),
             ],
           ),
+          
         ],
       ),
       actions: [
+        // Container(
+        //   margin: const EdgeInsets.only(right: 8),
+        //   decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
+        //   child: IconButton(
+        //     onPressed: () {},
+        //     icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+        //     tooltip: 'Notifications',
+        //   ),
+        // ),
         Container(
           margin: const EdgeInsets.only(right: 8),
-          decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(10),
+          ),
           child: IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-            tooltip: 'Notifications',
+            onPressed: () {
+              _showLogoutDialog();
+            },
+            icon: const Icon(Icons.logout_rounded, color: Colors.white),
+            tooltip: 'Logout',
           ),
         ),
       ],
     );
   }
+
+  void _showLogoutDialog() {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.logout_rounded, color: Colors.red, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Logout',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            color: Colors.grey[700],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.red, Colors.red[700]!],
+              ),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: TextButton(
+              onPressed: () async {
+                Get.back();
+                await _logout();
+              },
+              child: Text(
+                'Logout',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Future<void> _logout() async {
+    try {
+      await AppStorage.clearAll();
+      AppToasting.showSuccess('Logged out successfully!');
+      Get.offAllNamed(RouteName.signIn);
+    } catch (e) {
+      debugPrint("Logout error: ${e.toString()}");
+      AppToasting.showError('Logout failed: ${e.toString()}');
+    }
+  }
+
 
   Widget _buildStatsSection(DashboardController controller) {
     return Obx(
@@ -326,20 +432,20 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
-                  ),
-                  child: const CircleAvatar(
-                    radius: 36,
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.admin_panel_settings_rounded, size: 40, color: Colors.grey),
-                  ),
-                ),
-                const SizedBox(height: 16),
+                // Container(
+                //   padding: const EdgeInsets.all(4),
+                //   decoration: BoxDecoration(
+                //     color: Colors.white,
+                //     shape: BoxShape.circle,
+                //     boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+                //   ),
+                //   child: const CircleAvatar(
+                //     radius: 36,
+                //     backgroundColor: Colors.white,
+                //     child: Icon(Icons.admin_panel_settings_rounded, size: 40, color: Colors.grey),
+                //   ),
+                // ),
+                // const SizedBox(height: 16),
                 Text(
                   "Admin",
                   style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white),
@@ -353,51 +459,51 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
-                ListTile(
-                  leading: Icon(Icons.location_on_outlined, color: Constants.instance.primary),
-                  title: Text('Station Management', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
-                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                  onTap: () {
-                    Get.back();
-                    // Navigate to station management
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.people_outline_rounded, color: Constants.instance.primary),
-                  title: Text('Admin Listing', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
-                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                  onTap: () {
-                    Get.back();
-                    // Navigate to admin listing
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.person_outlined, color: Constants.instance.primary),
-                  title: Text('Passenger Listing', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
-                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                  onTap: () {
-                    Get.back();
-                    // Navigate to admin listing
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.approval_outlined, color: Constants.instance.primary),
-                  title: Text('Coolie Approvals', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
-                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                  onTap: () {
-                    Get.back();
-                    Get.toNamed(RouteName.transactionHistory);
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.history, color: Constants.instance.primary),
-                  title: Text('Booking History', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
-                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                  onTap: () {
-                    Get.back();
-                  },
-                ),
-                const Divider(height: 32),
+                // ListTile(
+                //   leading: Icon(Icons.location_on_outlined, color: Constants.instance.primary),
+                //   title: Text('Station Management', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+                //   trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                //   onTap: () {
+                //     Get.back();
+                //     // Navigate to station management
+                //   },
+                // ),
+                // ListTile(
+                //   leading: Icon(Icons.people_outline_rounded, color: Constants.instance.primary),
+                //   title: Text('Admin Listing', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+                //   trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                //   onTap: () {
+                //     Get.back();
+                //     // Navigate to admin listing
+                //   },
+                // ),
+                // ListTile(
+                //   leading: Icon(Icons.person_outlined, color: Constants.instance.primary),
+                //   title: Text('Passenger Listing', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+                //   trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                //   onTap: () {
+                //     Get.back();
+                //     // Navigate to admin listing
+                //   },
+                // ),
+                // ListTile(
+                //   leading: Icon(Icons.approval_outlined, color: Constants.instance.primary),
+                //   title: Text('Coolie Approvals', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+                //   trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                //   onTap: () {
+                //     Get.back();
+                //     Get.toNamed(RouteName.transactionHistory);
+                //   },
+                // ),
+                // ListTile(
+                //   leading: Icon(Icons.history, color: Constants.instance.primary),
+                //   title: Text('Booking History', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+                //   trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                //   onTap: () {
+                //     Get.back();
+                //   },
+                // ),
+                // const Divider(height: 32),
                 ListTile(
                   leading: const Icon(Icons.logout, color: Colors.red),
                   title: Text(
