@@ -19,6 +19,7 @@ class NetworkConstants {
   static const String getAllCoolies = 'api/users/getAllCollies';
   static const String getAllPassengers = 'api/users/getAllUsers';
   static const String getStats = 'api/admin/stats';
+  static const String updateCoolie = 'api/admin/collie/updateCollieProfile1';
 
   // Timeouts
   static const int sendTimeout = 30000; // 30 seconds

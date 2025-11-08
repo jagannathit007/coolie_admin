@@ -1,6 +1,7 @@
 import 'package:coolie_admin/api%20constants/network_constants.dart';
 import 'package:coolie_admin/screen/coolie listing/coolie_controller.dart';
 import 'package:coolie_admin/screen/coolie listing/coolie_service.dart';
+import 'package:coolie_admin/screen/coolie listing/editCoolieBottomSheet.dart';
 import 'package:coolie_admin/screen/dashboard/addCoolieBottomSheet.dart';
 import 'package:coolie_admin/utils/app_constants.dart';
 import 'package:flutter/material.dart';
@@ -75,27 +76,30 @@ class _CoolieScreenState extends State<CoolieScreen> {
                         _searchFocusNode.unfocus();
                         return controller.getAllCoolies(refresh: true);
                       },
-                      child: ListView.builder(
-                        controller: controller.scrollController,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 16,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 50),
+                        child: ListView.builder(
+                          controller: controller.scrollController,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 16,
+                          ),
+                          itemCount:
+                              controller.coolies.length +
+                              (controller.isLoadMore.value ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index == controller.coolies.length) {
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
+                            final coolie = controller.coolies[index];
+                            return _buildCoolieCard(coolie, index, controller);
+                          },
                         ),
-                        itemCount:
-                            controller.coolies.length +
-                            (controller.isLoadMore.value ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index == controller.coolies.length) {
-                            return const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-                          }
-                          final coolie = controller.coolies[index];
-                          return _buildCoolieCard(coolie, index, controller);
-                        },
                       ),
                     ),
                   );
@@ -138,57 +142,66 @@ class _CoolieScreenState extends State<CoolieScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey[200]!, width: 1),
       ),
-      child: Obx(() => TextField(
-            controller: _searchController,
-            focusNode: _searchFocusNode,
-            decoration: InputDecoration(
-              hintText: "Search coolies by name, mobile, or buckle number...",
-              hintStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500]),
-              prefixIcon: Icon(Icons.search_rounded, color: Colors.grey[600]),
-              suffixIcon: controller.searchQuery.value.isNotEmpty
-                  ? IconButton(
-                      icon: Icon(Icons.clear_rounded, color: Colors.grey[600]),
-                      onPressed: () {
-                        _searchController.clear();
-                        controller.searchQuery.value = '';
-                        _searchFocusNode.unfocus();
-                        controller.getAllCoolies(refresh: true);
-                      },
-                    )
-                  : null,
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 16,
-              ),
+      child: Obx(
+        () => TextField(
+          controller: _searchController,
+          focusNode: _searchFocusNode,
+          decoration: InputDecoration(
+            hintText: "Search coolies by name, mobile, or buckle number...",
+            hintStyle: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.grey[500],
             ),
-            style: GoogleFonts.poppins(fontSize: 14),
-            onChanged: (value) {
-              controller.searchQuery.value = value;
-              
-              // Cancel previous timer
-              _searchDebounce?.cancel();
-              
-              if (value.isEmpty) {
-                controller.getAllCoolies(refresh: true);
-              } else {
-                // Debounce search - wait 500ms after user stops typing
-                _searchDebounce = Timer(const Duration(milliseconds: 500), () {
-                  if (_searchController.text == value) {
-                    controller.getAllCoolies(search: value, refresh: true);
-                  }
-                });
-              }
-            },
-            onSubmitted: (value) {
-              _searchFocusNode.unfocus();
-              controller.getAllCoolies(search: value, refresh: true);
-            },
-          )),
+            prefixIcon: Icon(Icons.search_rounded, color: Colors.grey[600]),
+            suffixIcon: controller.searchQuery.value.isNotEmpty
+                ? IconButton(
+                    icon: Icon(Icons.clear_rounded, color: Colors.grey[600]),
+                    onPressed: () {
+                      _searchController.clear();
+                      controller.searchQuery.value = '';
+                      _searchFocusNode.unfocus();
+                      controller.getAllCoolies(refresh: true);
+                    },
+                  )
+                : null,
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 16,
+            ),
+          ),
+          style: GoogleFonts.poppins(fontSize: 14),
+          onChanged: (value) {
+            controller.searchQuery.value = value;
+
+            // Cancel previous timer
+            _searchDebounce?.cancel();
+
+            if (value.isEmpty) {
+              controller.getAllCoolies(refresh: true);
+            } else {
+              // Debounce search - wait 500ms after user stops typing
+              _searchDebounce = Timer(const Duration(milliseconds: 500), () {
+                if (_searchController.text == value) {
+                  controller.getAllCoolies(search: value, refresh: true);
+                }
+              });
+            }
+          },
+          onSubmitted: (value) {
+            _searchFocusNode.unfocus();
+            controller.getAllCoolies(search: value, refresh: true);
+          },
+        ),
+      ),
     );
   }
 
-  Widget _buildCoolieCard(Coolie coolie, int index, CoolieController controller) {
+  Widget _buildCoolieCard(
+    Coolie coolie,
+    int index,
+    CoolieController controller,
+  ) {
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 300 + (index * 50)),
       tween: Tween(begin: 0.0, end: 1.0),
@@ -229,7 +242,6 @@ class _CoolieScreenState extends State<CoolieScreen> {
                   // Profile Image
                   Container(
                     padding: const EdgeInsets.all(4),
-                    
                     child: ClipOval(
                       child: coolie.image.url.isNotEmpty
                           ? Image.network(
@@ -350,7 +362,14 @@ class _CoolieScreenState extends State<CoolieScreen> {
                             ],
                           ),
                         ),
-                        _buildStatusBadge(coolie),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildStatusBadge(coolie),
+                            const SizedBox(height: 8),
+                            _buildEditButton(coolie, controller),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -360,6 +379,60 @@ class _CoolieScreenState extends State<CoolieScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildEditButton(Coolie coolie, CoolieController controller) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          _searchFocusNode.unfocus();
+          _showEditCoolieBottomSheet(coolie);
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: Constants.instance.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: Constants.instance.primary.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.edit_rounded,
+                size: 14,
+                color: Constants.instance.primary,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                "Edit",
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Constants.instance.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showEditCoolieBottomSheet(Coolie coolie) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return EditCoolieBottomSheet(coolie: coolie);
+      },
     );
   }
 
@@ -432,13 +505,15 @@ class _CoolieScreenState extends State<CoolieScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Obx(() => Text(
-                controller.searchQuery.value.isNotEmpty
-                    ? "Try searching with different keywords"
-                    : "No coolies available at the moment",
-                style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500]),
-                textAlign: TextAlign.center,
-              )),
+          Obx(
+            () => Text(
+              controller.searchQuery.value.isNotEmpty
+                  ? "Try searching with different keywords"
+                  : "No coolies available at the moment",
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500]),
+              textAlign: TextAlign.center,
+            ),
+          ),
         ],
       ),
     );
@@ -554,7 +629,7 @@ class _CoolieScreenState extends State<CoolieScreen> {
                                 child: ClipOval(
                                   child: coolie.image.url.isNotEmpty
                                       ? Image.network(
-                                           "${NetworkConstants.imageURL}${coolie.image.url}",
+                                          "${NetworkConstants.imageURL}${coolie.image.url}",
                                           width: 64,
                                           height: 64,
                                           fit: BoxFit.cover,

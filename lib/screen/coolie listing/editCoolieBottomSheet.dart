@@ -1,40 +1,58 @@
 import 'dart:io';
-import 'package:coolie_admin/screen/dashboard/dashboard_controller.dart';
+import 'package:coolie_admin/api%20constants/network_constants.dart';
+import 'package:coolie_admin/screen/coolie listing/coolie_controller.dart';
+import 'package:coolie_admin/utils/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../utils/app_constants.dart';
+import '../../model/coolie_model.dart';
+import '../dashboard/dashboard_controller.dart';
 
-class AddCoolieBottomSheet extends StatefulWidget {
-  const AddCoolieBottomSheet({super.key});
+class EditCoolieBottomSheet extends StatefulWidget {
+  final Coolie coolie;
+
+  const EditCoolieBottomSheet({super.key, required this.coolie});
 
   @override
-  State<AddCoolieBottomSheet> createState() => _AddCoolieBottomSheetState();
+  State<EditCoolieBottomSheet> createState() => _EditCoolieBottomSheetState();
 }
 
-class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
+class _EditCoolieBottomSheetState extends State<EditCoolieBottomSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _mobileController = TextEditingController();
-  final _ageController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _buckleNumberController = TextEditingController();
-  final _addressController = TextEditingController();
+  late TextEditingController _nameController;
+  late TextEditingController _ageController;
+  late TextEditingController _emailController;
+  late TextEditingController _addressController;
 
   String? _selectedGender;
   String? _selectedDeviceType;
-  String? _selectedStation; // Add this for station selection
+  String? _selectedStation;
+  String? _selectedIsActive;
   File? _selectedImage;
+  String? _currentImageUrl;
   final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.coolie.name);
+    _ageController = TextEditingController(text: widget.coolie.age);
+    _emailController = TextEditingController(text: widget.coolie.emailId);
+    _addressController = TextEditingController(text: widget.coolie.address);
+    _selectedGender = widget.coolie.gender;
+    _selectedDeviceType = widget.coolie.deviceType;
+    _selectedStation = widget.coolie.stationId.id;
+    _selectedIsActive = widget.coolie.isActive ? 'true' : 'false';
+    _currentImageUrl = widget.coolie.image.url;
+    
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _mobileController.dispose();
     _ageController.dispose();
     _emailController.dispose();
-    _buckleNumberController.dispose();
     _addressController.dispose();
     super.dispose();
   }
@@ -44,6 +62,7 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
     if (image != null) {
       setState(() {
         _selectedImage = File(image.path);
+        _currentImageUrl = null; // Clear URL when new image is selected
       });
     }
   }
@@ -97,10 +116,10 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
         return Scaffold(
           resizeToAvoidBottomInset: true,
           backgroundColor: Colors.transparent,
-          body: GetBuilder<DashboardController>(
+          body: GetBuilder<CoolieController>(
             builder: (controller) {
               return Obx(() {
-                if (controller.isLoadingAddCoolie.value) {
+                if (controller.isUpdating.value) {
                   return Container(
                     color: Colors.black.withOpacity(0.3),
                     child: const Center(
@@ -115,7 +134,7 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
                           ),
                           SizedBox(height: 16),
                           Text(
-                            'Adding Coolie...',
+                            'Updating Coolie...',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -156,13 +175,11 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Constants.instance.primary.withOpacity(
-                                  0.1,
-                                ),
+                                color: Constants.instance.primary.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
-                                Icons.person_add_rounded,
+                                Icons.edit_rounded,
                                 color: Constants.instance.primary,
                                 size: 24,
                               ),
@@ -173,7 +190,7 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Add New Coolie",
+                                    "Edit Coolie",
                                     style: GoogleFonts.poppins(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
@@ -181,7 +198,7 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
                                     ),
                                   ),
                                   Text(
-                                    "Fill in the details below",
+                                    "Update coolie details",
                                     style: GoogleFonts.poppins(
                                       fontSize: 14,
                                       color: Colors.grey[600],
@@ -203,6 +220,7 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
                         child: Form(
                           key: _formKey,
                           child: SingleChildScrollView(
+                            controller: scrollController,
                             padding: const EdgeInsets.symmetric(horizontal: 24),
                             child: Column(
                               children: [
@@ -218,25 +236,6 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return 'Please enter full name';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-
-                                // Mobile Number
-                                _buildTextField(
-                                  controller: _mobileController,
-                                  label: "Mobile Number",
-                                  icon: Icons.phone_outlined,
-                                  isMobileNumber: true,
-                                  keyboardType: TextInputType.phone,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter mobile number';
-                                    }
-                                    if (value.length != 10) {
-                                      return 'Please enter valid mobile number';
                                     }
                                     return null;
                                   },
@@ -316,20 +315,6 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
                                 ),
                                 const SizedBox(height: 16),
 
-                                // Buckle Number
-                                _buildTextField(
-                                  controller: _buckleNumberController,
-                                  label: "Buckle Number",
-                                  icon: Icons.badge_outlined,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter buckle number';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-
                                 // Address
                                 _buildTextField(
                                   controller: _addressController,
@@ -345,7 +330,7 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
                                 ),
                                 const SizedBox(height: 16),
 
-                                // Station Dropdown - Using _buildDropdownField
+                                // Station Dropdown
                                 GetBuilder<DashboardController>(
                                   builder: (controller) {
                                     // Create station display names list
@@ -406,80 +391,81 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
                                     );
                                   },
                                 ),
+                                const SizedBox(height: 16),
+
+                                // Active Status Dropdown
+                                _buildDropdownField(
+                                  label: "Status",
+                                  icon: Icons.toggle_on_outlined,
+                                  value: _selectedIsActive == 'true' ? 'Active' : 'Inactive',
+                                  items: const ['Active', 'Inactive'],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedIsActive = value == 'Active' ? 'true' : 'false';
+                                    });
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please select status';
+                                    }
+                                    return null;
+                                  },
+                                ),
                                 const SizedBox(height: 32),
 
                                 // Submit Button
-                                GetBuilder<DashboardController>(
-                                  builder: (controller) {
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Constants.instance.primary,
-                                            Constants.instance.primary
-                                                .withOpacity(0.8),
-                                          ],
-                                        ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Constants.instance.primary,
+                                        Constants.instance.primary.withOpacity(0.8),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Constants.instance.primary.withOpacity(0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ElevatedButton(
+                                    onPressed: controller.isUpdating.value ? null : _submitForm,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      padding: const EdgeInsets.symmetric(vertical: 16),
+                                      shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Constants.instance.primary
-                                                .withOpacity(0.3),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 4),
-                                          ),
-                                        ],
                                       ),
-                                      child: ElevatedButton(
-                                        onPressed: controller.isLoadingAddCoolie.value
-                                            ? null
-                                            : _submitForm,
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.transparent,
-                                          shadowColor: Colors.transparent,
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 16,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
+                                    ),
+                                    child: controller.isUpdating.value
+                                        ? const SizedBox(
+                                            height: 20,
+                                            width: 20,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2,
                                             ),
-                                          ),
-                                        ),
-                                        child: controller.isLoadingAddCoolie.value
-                                            ? const SizedBox(
-                                                height: 20,
-                                                width: 20,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      color: Colors.white,
-                                                      strokeWidth: 2,
-                                                    ),
-                                              )
-                                            : Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  const Icon(
-                                                    Icons.add_circle,
-                                                    color: Colors.white,
-                                                    size: 20,
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Text(
-                                                    "Add Coolie",
-                                                    style: GoogleFonts.poppins(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 16,
-                                                    ),
-                                                  ),
-                                                ],
+                                          )
+                                        : Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(Icons.save_rounded, color: Colors.white, size: 20),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                "Update Coolie",
+                                                style: GoogleFonts.poppins(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16,
+                                                ),
                                               ),
-                                      ),
-                                    );
-                                  },
+                                            ],
+                                          ),
+                                  ),
                                 ),
                                 const SizedBox(height: 32),
                               ],
@@ -502,47 +488,85 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
     return GestureDetector(
       onTap: _showImageSourceDialog,
       child: Center(
-        child: Container(
-          height: 120,
-          width: 120,
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.grey[300]!,
-              width: 2,
-              style: BorderStyle.solid,
-            ),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: _selectedImage != null
-              ? ClipOval(child: Image.file(_selectedImage!, fit: BoxFit.cover))
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.camera_alt_outlined,
-                      size: 40,
-                      color: Colors.grey[400],
-                    ),
-                    const SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(
-                        "Tap to add photo",
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
+        child: Stack(
+          children: [
+            Container(
+              height: 120,
+              width: 120,
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.grey[300]!,
+                  width: 2,
+                  style: BorderStyle.solid,
                 ),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: _selectedImage != null
+                  ? ClipOval(child: Image.file(_selectedImage!, fit: BoxFit.cover))
+                  : _currentImageUrl != null && _currentImageUrl!.isNotEmpty
+                      ? ClipOval(
+                          child: Image.network(
+                            "${NetworkConstants.imageURL}$_currentImageUrl",
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return _buildPlaceholderImage();
+                            },
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              );
+                            },
+                          ),
+                        )
+                      : _buildPlaceholderImage(),
+            ),
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Constants.instance.primary,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPlaceholderImage() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.camera_alt_outlined, size: 40, color: Colors.grey[400]),
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Text(
+            "Tap to change photo",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -552,7 +576,6 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
     required IconData icon,
     TextInputType? keyboardType,
     int maxLines = 1,
-    bool isMobileNumber = false,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
@@ -560,14 +583,6 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
       keyboardType: keyboardType,
       maxLines: maxLines,
       validator: validator,
-      buildCounter:
-          (
-            BuildContext context, {
-            int? currentLength,
-            int? maxLength,
-            bool? isFocused,
-          }) => null,
-      maxLength: isMobileNumber ? 10 : null,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: Constants.instance.primary),
@@ -592,10 +607,7 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
           borderSide: const BorderSide(color: Colors.red, width: 2),
         ),
         labelStyle: GoogleFonts.poppins(color: Colors.grey[600]),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
       style: GoogleFonts.poppins(),
     );
@@ -721,27 +733,25 @@ class _AddCoolieBottomSheetState extends State<AddCoolieBottomSheet> {
   }
 
   void _submitForm() {
-    if (_formKey.currentState!.validate() && _selectedImage != null) {
-      final controller = Get.find<DashboardController>();
-      controller.addCoolie(
+    if (_formKey.currentState!.validate()) {
+      final controller = Get.find<CoolieController>();
+      controller.updateCoolie(
+        collieId: widget.coolie.id,
         name: _nameController.text.trim(),
-        mobileNo: _mobileController.text.trim(),
         age: _ageController.text.trim(),
         deviceType: _selectedDeviceType!,
         emailId: _emailController.text.trim(),
         gender: _selectedGender!,
-        buckleNumber: _buckleNumberController.text.trim(),
         address: _addressController.text.trim(),
-        image: _selectedImage!,
-      );
-    } else if (_selectedImage == null) {
-      Get.snackbar(
-        'Error',
-        'Please select an image',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+        stationId: _selectedStation!,
+        isActive: _selectedIsActive!,
+        image: _selectedImage,
+      ).then((success) {
+        if (success) {
+          Navigator.pop(context);
+        }
+      });
     }
   }
 }
+
