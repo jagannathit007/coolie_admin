@@ -4,33 +4,36 @@ import 'package:flutter/cupertino.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../model/dashboard_stats_model.dart';
 import '../../model/pending_coolie_list_model.dart';
 import '../../model/station_model.dart';
 import '../../repositories/authentication_repo.dart';
 import 'dart:io';
-
 import '../../services/app_storage.dart';
 
 class DashboardController extends GetxController {
   final AuthenticationRepo _authRepo = AuthenticationRepo();
-  var isLoading = false.obs;
 
+  var isLoading = false.obs;
+  var isLoadingAddCoolie = false.obs;
   RxList<PendingCooliList> pendingCoolies = <PendingCooliList>[].obs;
   RxList<Station> stations = <Station>[].obs;
   RxString selectedStationId = ''.obs;
+  var dashboardStats = Rx<DashboardStats?>(null);
 
   @override
   void onInit() {
     super.onInit();
     pendingCoolie();
     getAllStations();
+    getDashboardStats();
   }
 
   Future<void> getAllStations() async {
     try {
       final response = await _authRepo.getAllStation();
-      if (response != null && response.station.isNotEmpty) {
-        stations.value = response.station;
+      if (response != null && response.stations.docs.isNotEmpty) {
+        stations.value = response.stations.docs;
         debugPrint("Stations loaded: ${stations.length}");
       }
     } catch (e) {
@@ -65,7 +68,7 @@ class DashboardController extends GetxController {
     required File image,
   }) async {
     try {
-      isLoading.value = true;
+      isLoadingAddCoolie.value = true;
 
       if (selectedStationId.isEmpty) {
         AppToasting.showError('Please select a station');
@@ -100,7 +103,7 @@ class DashboardController extends GetxController {
       debugPrint("Failed to add coolie: ${e.toString()}");
       AppToasting.showError('Failed to add coolie: ${e.toString()}');
     } finally {
-      isLoading.value = false;
+      isLoadingAddCoolie.value = false;
     }
   }
 
@@ -112,6 +115,23 @@ class DashboardController extends GetxController {
       await pendingCoolie();
     } catch (e) {
       debugPrint("Failed to load Passenger: ${e.toString()}");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> getDashboardStats() async {
+    try {
+      isLoading.value = true;
+      
+      final response = await _authRepo.getDashboardStats();
+      
+      if (response != null) {
+        dashboardStats.value = response;
+        debugPrint("Dashboard stats loaded successfully");
+      }
+    } catch (e) {
+      debugPrint("Failed to load dashboard stats: ${e.toString()}");
     } finally {
       isLoading.value = false;
     }

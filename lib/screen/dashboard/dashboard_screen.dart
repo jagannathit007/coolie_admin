@@ -14,20 +14,7 @@ class DashBoardScreen extends StatefulWidget {
   State<DashBoardScreen> createState() => _DashBoardScreenState();
 }
 
-class _DashBoardScreenState extends State<DashBoardScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
+class _DashBoardScreenState extends State<DashBoardScreen> {
 
   @override
   Widget build(BuildContext context) {
@@ -35,19 +22,16 @@ class _DashBoardScreenState extends State<DashBoardScreen> with SingleTickerProv
       init: DashboardController(),
       builder: (controller) {
         return Scaffold(
-          backgroundColor: Colors.grey[50],
+          backgroundColor: Colors.white,
           appBar: _buildModernAppBar(),
           drawer: _buildModernDrawer(controller),
           body: Column(
             children: [
               _buildStatsSection(controller),
-              _buildTabSection(),
-              Expanded(
-                child: TabBarView(controller: _tabController, children: [_buildCooliesListTab(controller), _buildPassengerTab(controller)]),
-              ),
+              _buildActionButtonsSection(),
             ],
           ),
-          floatingActionButton: _buildModernFAB(),
+          // floatingActionButton: _buildModernFAB(),
         );
       },
     );
@@ -95,34 +79,41 @@ class _DashBoardScreenState extends State<DashBoardScreen> with SingleTickerProv
   }
 
   Widget _buildStatsSection(DashboardController controller) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Constants.instance.primary,
-        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-        child: Column(
-          children: [
-            Row(
+    return Obx(
+      () {
+        final stats = controller.dashboardStats.value;
+        
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
+            boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+            child: Column(
               children: [
-                Expanded(child: _buildStatCard("Pending", controller.pendingCoolies.length.toString(), Icons.pending_actions_rounded, Colors.orange)),
-                const SizedBox(width: 12),
-                Expanded(child: _buildStatCard("Active Coolies", "24", Icons.people_outline_rounded, Colors.green)),
+                Row(
+                  children: [
+                    Expanded(child: _buildStatCard("Total Passengers", stats?.overview.totalUsers.total ?? "0", Icons.people_outline_rounded, Colors.orange)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildStatCard("Total Coolies", stats?.overview.activeCollies.total ?? "0", Icons.people_outline_rounded, Colors.green)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(child: _buildStatCard("Total Bookings", stats?.overview.totalBookings.count ?? "0", Icons.assignment_outlined, Colors.blue)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildStatCard("Stations", stats?.overview.totalStations ?? "0", Icons.location_on_outlined, Colors.purple)),
+                  ],
+                ),
               ],
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(child: _buildStatCard("Total Bookings", "156", Icons.assignment_outlined, Colors.blue)),
-                const SizedBox(width: 12),
-                Expanded(child: _buildStatCard("Stations", "8", Icons.location_on_outlined, Colors.purple)),
-              ],
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      }
     );
   }
 
@@ -130,9 +121,10 @@ class _DashBoardScreenState extends State<DashBoardScreen> with SingleTickerProv
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+        border: Border.all(color: Colors.grey[200]!, width: 1),
+        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,192 +134,160 @@ class _DashBoardScreenState extends State<DashBoardScreen> with SingleTickerProv
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: color.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
-                child: Icon(icon, color: Colors.white, size: 20),
+                decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+                child: Icon(icon, color: color, size: 20),
               ),
               Text(
                 value,
-                style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey[800]),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Text(
             label,
-            style: GoogleFonts.poppins(fontSize: 13, color: Colors.white70, fontWeight: FontWeight.w500),
+            style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTabSection() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
-      ),
-      child: TabBar(
-        controller: _tabController,
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.grey[600],
-        indicator: BoxDecoration(
-          gradient: LinearGradient(colors: [Constants.instance.primary, Constants.instance.primary.withOpacity(0.8)]),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        dividerColor: Colors.transparent,
-        indicatorSize: TabBarIndicatorSize.tab,
-        labelStyle: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500),
-        padding: const EdgeInsets.all(4),
-        tabs: const [
-          Tab(text: 'Coolies'),
-          Tab(text: 'Passenger'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPassengerTab(DashboardController controller) {
-    return Obx(() {
-      if (controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
-
-      if (controller.pendingCoolies.isEmpty) {
-        return _buildEmptyState(icon: Icons.inbox_outlined, title: "Passenger", subtitle: "Passenger list coming soon");
-      }
-
-      return RefreshIndicator(
-        onRefresh: () => controller.pendingCoolie(),
-        child: ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          itemCount: controller.pendingCoolies.length,
-          itemBuilder: (context, index) {
-            final coolie = controller.pendingCoolies[index];
-            return _buildModernCoolieCard(
-              coolie.name.toString(),
-              coolie.mobileNo.toString(),
-              coolie.buckleNumber.toString(),
-              coolie.address.toString(),
-              controller,
-              coolie.id.toString(),
-              index,
-            );
-          },
-        ),
-      );
-    });
-  }
-
-  Widget _buildCooliesListTab(DashboardController controller) {
-    return _buildEmptyState(icon: Icons.people_outline_rounded, title: "Coolies", subtitle: "Coolies list coming soon");
-  }
-
-  Widget _buildEmptyState({required IconData icon, required String title, required String subtitle}) {
-    return Center(
+  Widget _buildActionButtonsSection() {
+    return Padding( // CHANGED: Removed Expanded widget
+      padding: const EdgeInsets.all(15),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start, // CHANGED: from center to start
         children: [
-          Icon(icon, size: 80, color: Colors.grey[300]),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey[700]),
+          const SizedBox(height: 20), // You can reduce this if you want even less space
+          _buildProfessionalButton(
+            title: "Stations",
+            subtitle: "Manage and view all stations",
+            icon: Icons.business_outlined,
+            color: Constants.instance.primary.withOpacity(0.6),
+            onTap: () {
+              // Navigate to passengers screen
+              Get.toNamed(RouteName.station);
+              // Get.snackbar(
+              //   "Passengers",
+              //   "Passengers screen coming soon",
+              //   snackPosition: SnackPosition.BOTTOM,
+              //   backgroundColor: Colors.white,
+              //   colorText: Colors.black87,
+              // );
+            },
           ),
-          const SizedBox(height: 8),
-          Text(subtitle, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
+          const SizedBox(height: 20),
+          _buildProfessionalButton(
+            title: "Coolies",
+            subtitle: "Manage and view all coolies",
+            icon: Icons.people_outline_rounded,
+            color: Constants.instance.primary.withOpacity(0.6),
+            onTap: () {
+              // Navigate to coolies screen
+              Get.toNamed(RouteName.coolieScreen);
+              // Get.snackbar(
+              //   "Coolies",
+              //   "Coolies screen coming soon",
+              //   snackPosition: SnackPosition.BOTTOM,
+              //   backgroundColor: Colors.white,
+              //   colorText: Colors.black87,
+              // );
+            },
+          ),
+          const SizedBox(height: 20),
+          _buildProfessionalButton(
+            title: "Passengers",
+            subtitle: "Manage and view all passengers",
+            icon: Icons.person_outline_rounded,
+            color: Constants.instance.primary.withOpacity(0.6),
+            onTap: () {
+              // Navigate to passengers screen
+              Get.toNamed(RouteName.passengerScreen);
+              // Get.snackbar(
+              //   "Passengers",
+              //   "Passengers screen coming soon",
+              //   snackPosition: SnackPosition.BOTTOM,
+              //   backgroundColor: Colors.white,
+              //   colorText: Colors.black87,
+              // );
+            },
+          ),
         ],
       ),
     );
   }
-
-  Widget _buildModernCoolieCard(String name, String mobile, String buckleNo, String station, DashboardController controller, String id, int index) {
-    return TweenAnimationBuilder<double>(
-      duration: Duration(milliseconds: 300 + (index * 100)),
-      tween: Tween(begin: 0.0, end: 1.0),
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(offset: Offset(0, 20 * (1 - value)), child: child),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              _showModernBottomSheet(context, name, mobile, buckleNo, station, "Pending", id, controller);
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [Constants.instance.primary, Constants.instance.primary.withOpacity(0.8)]),
-                      shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: Constants.instance.primary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 2))],
-                    ),
-                    child: const CircleAvatar(
-                      radius: 28,
-                      backgroundColor: Colors.white,
-                      child: Icon(Icons.person_rounded, size: 32, color: Colors.grey),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          name,
-                          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[800]),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.phone, size: 14, color: Colors.grey[600]),
-                            const SizedBox(width: 4),
-                            Text(mobile, style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[600])),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.badge_outlined, size: 14, color: Colors.grey[600]),
-                            const SizedBox(width: 4),
-                            Text("Buckle: $buckleNo", style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600])),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.orange, width: 1.5),
-                    ),
-                    child: Text(
-                      "Pending",
-                      style: GoogleFonts.poppins(color: Colors.orange[800], fontWeight: FontWeight.w600, fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
+  Widget _buildProfessionalButton({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [color, color.withOpacity(0.8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: Colors.white, size: 28),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.9),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ],
           ),
         ),
       ),

@@ -1,7 +1,7 @@
 class NetworkConstants {
   // local Urls
-  static const String baseUrl = 'https://hpf47sfz-2500.inc1.devtunnels.ms/';
-  static const String imageURL = 'https://hpf47sfz-2500.inc1.devtunnels.ms/';
+  static const String baseUrl = 'https://lsdd5gzv-2500.inc1.devtunnels.ms/';
+  static const String imageURL = 'https://lsdd5gzv-2500.inc1.devtunnels.ms/';
 
   //Production Urls
 
@@ -16,6 +16,9 @@ class NetworkConstants {
   static const String getAllStation = 'api/admin/getAllStation';
   static const String approveCollie = 'api/admin/approveCollie';
   static const String addCollie = 'api/admin/collie/registerCollie';
+  static const String getAllCoolies = 'api/users/getAllCollies';
+  static const String getAllPassengers = 'api/users/getAllUsers';
+  static const String getStats = 'api/admin/stats';
 
   // Timeouts
   static const int sendTimeout = 30000; // 30 seconds

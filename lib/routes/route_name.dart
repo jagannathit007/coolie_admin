@@ -7,5 +7,7 @@ class RouteName {
   static const String checkIn = '/CheckIn';
   static const String transactionHistory = '/TransactionHistory';
   static const String otpVerification = '/OtpVerification';
-
+  static const String coolieScreen = '/CoolieScreen';
+  static const String passengerScreen = '/PassengerScreen';
+  static const String station = '/station';
 }

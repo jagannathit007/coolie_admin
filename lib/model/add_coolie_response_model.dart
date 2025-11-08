@@ -77,7 +77,7 @@ class FaceRegistration {
   final String? s3Url;
   final bool? processed;
   final bool? embeddingStored;
-  final String? error;
+  final dynamic error;
 
   FaceRegistration({
     this.filename,
