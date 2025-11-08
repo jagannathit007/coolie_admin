@@ -84,7 +84,16 @@ class SplashScreen extends StatelessWidget {
                                     shape: BoxShape.circle,
                                     boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 30, spreadRadius: 5, offset: const Offset(0, 10))],
                                   ),
-                                  child: Center(child: Icon(Icons.luggage_rounded, size: 70, color: Constants.instance.primary)),
+                                  child: Center(child: ClipRRect(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(16),
+                                ),
+                                child: Image.asset(
+                                  "assets/logo.png",
+                                  width: 120,
+                                  height: 120,
+                                ),
+                              ),),
                                 ),
                               ),
                             ),
