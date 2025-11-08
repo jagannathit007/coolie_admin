@@ -77,13 +77,13 @@ class SplashScreen extends StatelessWidget {
                               child: Opacity(
                                 opacity: controller.fadeAnimation.value,
                                 child: Container(
-                                  width: 140,
-                                  height: 140,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 30, spreadRadius: 5, offset: const Offset(0, 10))],
-                                  ),
+                                  // width: 140,
+                                  // height: 140,
+                                  // decoration: BoxDecoration(
+                                  //   color: Colors.white,
+                                  //   shape: BoxShape.circle,
+                                  //   boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 30, spreadRadius: 5, offset: const Offset(0, 10))],
+                                  // ),
                                   child: Center(child: ClipRRect(
                                 borderRadius: BorderRadius.all(
                                   Radius.circular(16),
